@@ -1,7 +1,15 @@
-from rest_framework import mixins
+from datetime import date
+
+from django.db import transaction
+from django.shortcuts import redirect
+from rest_framework import mixins, status
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from books_inventory.models import Book
 from borrowings.models import Borrowing
 from borrowings.serializers import BorrowingSerializer, BorrowingListDetailSerializer, BorrowingCreateSerializer
 
@@ -38,3 +46,16 @@ class BorrowingViewSet(
         if is_active:
             queryset = queryset.filter(actual_return_date__isnull=True)
         return queryset.distinct()
+
+    @action(detail=True, methods=["post", "get"], url_path="return")
+    def return_borrowing(self, request, pk=None):
+        borrowing = self.get_object()
+        book = get_object_or_404(Book, id=borrowing.book.id)
+        if not borrowing.actual_return_date:
+            with transaction.atomic():
+                borrowing.actual_return_date = date.today()
+                book.inventory += 1
+                book.save()
+                borrowing.save()
+                return redirect(f"/api/borrowings/{pk}")
+        return Response(data={"detail": "This book already returned"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
