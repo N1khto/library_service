@@ -24,7 +24,7 @@ class Borrowing(models.Model):
                 name="expected_return_date_not_before_borrow_date",
             ),
             models.CheckConstraint(
-                check=Q(actual_return_date__gt=F("borrow_date")),
+                check=Q(actual_return_date__gte=F("borrow_date")),
                 name="actual_return_date_not_before_borrow_date",
             ),
         ]
