@@ -16,19 +16,6 @@ class Borrowing(models.Model):
     def __str__(self):
         return f"Book:'{self.book.title}' borrowed by {self.user.email}"
 
-    class Meta:
-        ordering = ["-borrow_date"]
-        constraints = [
-            models.CheckConstraint(
-                check=Q(expected_return_date__gt=F("borrow_date")),
-                name="expected_return_date_not_before_borrow_date",
-            ),
-            models.CheckConstraint(
-                check=Q(actual_return_date__gte=F("borrow_date")),
-                name="actual_return_date_not_before_borrow_date",
-            ),
-        ]
-
     def clean(self):
         book = Book.objects.get(id=self.book.id)
         if book.inventory < 1:
@@ -45,3 +32,16 @@ class Borrowing(models.Model):
         super(Borrowing, self).save(
             force_insert, force_update, using, update_fields
         )
+
+    class Meta:
+        ordering = ["-borrow_date"]
+        constraints = [
+            models.CheckConstraint(
+                check=Q(expected_return_date__gt=F("borrow_date")),
+                name="expected_return_date_not_before_borrow_date",
+            ),
+            models.CheckConstraint(
+                check=Q(actual_return_date__gte=F("borrow_date")),
+                name="actual_return_date_not_before_borrow_date",
+            ),
+        ]
