@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q, F
 
@@ -27,3 +28,20 @@ class Borrowing(models.Model):
                 name="actual_return_date_not_before_borrow_date",
             ),
         ]
+
+    def clean(self):
+        book = Book.objects.get(id=self.book.id)
+        if book.inventory < 1:
+            raise ValidationError(message="This book out of stock. Come back latter.")
+
+    def save(
+            self,
+            force_insert=False,
+            force_update=False,
+            using=None,
+            update_fields=None,
+    ):
+        self.full_clean()
+        super(Borrowing, self).save(
+            force_insert, force_update, using, update_fields
+        )
