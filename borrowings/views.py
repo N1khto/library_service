@@ -49,6 +49,9 @@ class BorrowingViewSet(
 
     @action(detail=True, methods=["post", "get"], url_path="return")
     def return_borrowing(self, request, pk=None):
+        """Action used to return borrowed book.
+        You cannot return book twice.
+        Also you can return only book without 'actual_return_date'"""
         borrowing = self.get_object()
         book = get_object_or_404(Book, id=borrowing.book.id)
         if not borrowing.actual_return_date:
@@ -58,4 +61,5 @@ class BorrowingViewSet(
                 book.save()
                 borrowing.save()
                 return redirect(f"/api/borrowings/{pk}")
+            
         return Response(data={"detail": "This book already returned"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
