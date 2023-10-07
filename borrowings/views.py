@@ -12,6 +12,7 @@ from rest_framework.viewsets import GenericViewSet
 from books_inventory.models import Book
 from borrowings.models import Borrowing
 from borrowings.serializers import BorrowingSerializer, BorrowingListDetailSerializer, BorrowingCreateSerializer
+from borrowings.notifications import borrow_notification
 
 
 class BorrowingViewSet(
@@ -33,6 +34,7 @@ class BorrowingViewSet(
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        borrow_notification(serializer.data)
 
     def get_queryset(self):
         is_active = self.request.query_params.get("is_active")
