@@ -22,16 +22,14 @@ class Borrowing(models.Model):
             raise ValidationError(message="This book out of stock. Come back latter.")
 
     def save(
-            self,
-            force_insert=False,
-            force_update=False,
-            using=None,
-            update_fields=None,
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
     ):
         self.full_clean()
-        super(Borrowing, self).save(
-            force_insert, force_update, using, update_fields
-        )
+        super(Borrowing, self).save(force_insert, force_update, using, update_fields)
 
     class Meta:
         ordering = ["-borrow_date"]
