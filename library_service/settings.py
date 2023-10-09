@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "django_q",
     "books_inventory",
     "borrowings",
     "user",
@@ -145,4 +146,22 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=99),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=99),
     "ROTATE_REFRESH_TOKENS": True,
+}
+
+Q_CLUSTER = {
+    "name": "library_service",
+    "workers": 1,
+    "timeout": 10,
+    "retry": 20,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+    "sync": True
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "my_cache_table",
+    }
 }
