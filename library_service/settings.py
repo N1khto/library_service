@@ -9,8 +9,13 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import os
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +25,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-30ho^kgmvilhh153@&c7th0($e8-cjm(x@jcnkxtww6s+ft-^n"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+BOT_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # Application definition
 
@@ -38,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "django_q",
     "books_inventory",
     "borrowings",
     "user",
@@ -137,4 +146,22 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=99),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=99),
     "ROTATE_REFRESH_TOKENS": True,
+}
+
+Q_CLUSTER = {
+    "name": "library_service",
+    "workers": 1,
+    "timeout": 10,
+    "retry": 20,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+    "sync": True
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "my_cache_table",
+    }
 }

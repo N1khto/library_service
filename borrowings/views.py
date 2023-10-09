@@ -11,14 +11,19 @@ from rest_framework.viewsets import GenericViewSet
 
 from books_inventory.models import Book
 from borrowings.models import Borrowing
-from borrowings.serializers import BorrowingSerializer, BorrowingListDetailSerializer, BorrowingCreateSerializer
+from borrowings.serializers import (
+    BorrowingSerializer,
+    BorrowingListDetailSerializer,
+    BorrowingCreateSerializer,
+)
+from borrowings.notifications import borrow_notification
 
 
 class BorrowingViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
-    GenericViewSet
+    GenericViewSet,
 ):
     queryset = Borrowing.objects.all()
     serializer_class = BorrowingSerializer
@@ -33,6 +38,7 @@ class BorrowingViewSet(
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        borrow_notification(serializer.data)
 
     def get_queryset(self):
         is_active = self.request.query_params.get("is_active")
@@ -61,5 +67,8 @@ class BorrowingViewSet(
                 book.save()
                 borrowing.save()
                 return redirect(f"/api/borrowings/{pk}")
-            
-        return Response(data={"detail": "This book already returned"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        return Response(
+            data={"detail": "This book already returned"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
