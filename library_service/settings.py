@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django_q",
     "books_inventory",
     "borrowings",
+    "payments",
     "user",
 ]
 
