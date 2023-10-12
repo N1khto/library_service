@@ -36,6 +36,8 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 BOT_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+
 # Application definition
 
 INSTALLED_APPS = [
