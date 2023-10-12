@@ -40,10 +40,15 @@ class BorrowingViewSet(
             return BorrowingCreateSerializer
         return BorrowingSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
     def perform_create(self, serializer):
         instance = serializer.save(user=self.request.user)
         borrow_notification(serializer.data)
-        create_borrowing_payment(instance)
+        create_borrowing_payment(instance, serializer.context.get("request"))
 
     def get_queryset(self):
         is_active = self.request.query_params.get("is_active")
