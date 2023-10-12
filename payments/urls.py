@@ -8,7 +8,7 @@ router.register("", PaymentViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("create-checkout", StripeCheckoutView.as_view(), name="create_checkout")
+    path("create-checkout", StripeCheckoutView.as_view(), name="create_checkout"),
 ]
 
 app_name = "payments"
