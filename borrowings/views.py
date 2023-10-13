@@ -2,6 +2,8 @@ from datetime import date
 
 from django.db import transaction
 from django.shortcuts import redirect
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -63,7 +65,7 @@ class BorrowingViewSet(
             queryset = queryset.filter(actual_return_date__isnull=True)
         return queryset.distinct()
 
-    @action(detail=True, methods=["post", "get"], url_path="return")
+    @action(detail=True, methods=["post"], url_path="return")
     def return_borrowing(self, request, pk=None):
         """Action used to return borrowed book.
         You cannot return book twice.
@@ -82,3 +84,20 @@ class BorrowingViewSet(
             data={"detail": "This book already returned"},
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "is_active",
+                type=OpenApiTypes.STR,
+                description="Display unreturned borrowings (ex. ?is_active=true)",
+            ),
+            OpenApiParameter(
+                "user_id",
+                type=OpenApiTypes.STR,
+                description="Display borrowings be user id (only for staff)(ex. ?user_id=6)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
