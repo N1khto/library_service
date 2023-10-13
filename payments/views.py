@@ -4,11 +4,15 @@ import stripe
 from django.shortcuts import redirect
 
 from rest_framework import mixins, status
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django.conf import settings
+from stripe.error import InvalidRequestError
 
 from payments.models import Payment
 from payments.serializers import PaymentSerializer
@@ -33,6 +37,27 @@ class PaymentViewSet(
         if not self.request.user.is_staff:
             queryset = queryset.filter(borrowing__user__id=self.request.user.id)
         return queryset.distinct()
+
+    @action(detail=False, methods=["get"])
+    def success(self, request):
+        """Action used to check if stripe session was paid
+        and change payment status in database"""
+        try:
+            session = stripe.checkout.Session.retrieve(request.query_params.get("session_id"))
+        except InvalidRequestError:
+            return Response("Invalid stripe session")
+        payment = get_object_or_404(Payment, id=request.query_params.get("payment_id"))
+        payment_status = session.get("payment_status")
+        if payment_status == "paid":
+            payment.status = "paid"
+            payment.save()
+            return Response("Payment complete")
+        return Response("Payment already proceeded")
+
+    @action(detail=False, methods=["get"])
+    def cancel(self, request):
+        """Endpoint displaying message if payment is cancelled"""
+        return Response("Payment can be paid a bit later (the session is available for 24h)")
 
 
 class StripeCheckoutView(APIView):
@@ -59,7 +84,7 @@ class StripeCheckoutView(APIView):
             )
 
 
-def create_borrowing_payment(borrowing):
+def create_borrowing_payment(borrowing, request):
     """function used to receive borrowing instance, calculate total price of
     borrowing and create related payment instance. Then create new stripe checkout session
     and attach session_id and session_url to payment instance"""
@@ -80,8 +105,12 @@ def create_borrowing_payment(borrowing):
             },
         ],
         mode="payment",
-        success_url=TEST_DEFAULT_URL + "/?success=true",
-        cancel_url=TEST_DEFAULT_URL + "/?cancelled=true",
+        success_url=request.build_absolute_uri(
+            reverse("payments:payment-success")
+            + "?session_id={CHECKOUT_SESSION_ID}"
+            + f"&payment_id={payment.id}"
+        ),
+        cancel_url=request.build_absolute_uri(reverse("payments:payment-cancel")),
     )
     payment.session_url = checkout_session.get("url")
     payment.session_id = checkout_session.get("id")
