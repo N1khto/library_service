@@ -13,10 +13,12 @@ from books_inventory.models import Book
 from borrowings.models import Borrowing
 from borrowings.serializers import (
     BorrowingSerializer,
-    BorrowingListDetailSerializer,
+    BorrowingListSerializer,
+    BorrowingDetailSerializer,
     BorrowingCreateSerializer,
 )
 from borrowings.notifications import borrow_notification
+from payments.views import create_borrowing_payment
 
 
 class BorrowingViewSet(
@@ -30,15 +32,23 @@ class BorrowingViewSet(
     permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrieve"):
-            return BorrowingListDetailSerializer
+        if self.action == "list":
+            return BorrowingListSerializer
+        if self.action == "retrieve":
+            return BorrowingDetailSerializer
         if self.action == "create":
             return BorrowingCreateSerializer
         return BorrowingSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        instance = serializer.save(user=self.request.user)
         borrow_notification(serializer.data)
+        create_borrowing_payment(instance, serializer.context.get("request"))
 
     def get_queryset(self):
         is_active = self.request.query_params.get("is_active")
