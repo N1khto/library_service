@@ -16,7 +16,7 @@ def sample_book(**params):
         "author": "Unknown",
         "cover": "hard",
         "inventory": 666,
-        "daily_fee": 13
+        "daily_fee": 13,
     }
     defaults.update(params)
 
@@ -79,7 +79,7 @@ class AuthenticatedBookApiTest(TestCase):
             "author": "Unknown",
             "cover": "hard",
             "inventory": 666,
-            "daily_fee": 13
+            "daily_fee": 13,
         }
         res = self.client.post(BOOK_URL, payload)
 
@@ -103,7 +103,7 @@ class AdminBookApiTests(TestCase):
             "author": "Unknown",
             "cover": "hard",
             "inventory": 666,
-            "daily_fee": 13
+            "daily_fee": 13,
         }
 
         res = self.client.post(BOOK_URL, payload)

@@ -18,7 +18,7 @@ def sample_borrowing(**params):
         "expected_return_date": "2100-01-01",
         "actual_return_date": None,
         "book": sample_book(),
-        "user": None
+        "user": None,
     }
     defaults.update(params)
 
@@ -66,7 +66,9 @@ class AuthenticatedBorrowingApiTest(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_retrieve_borrowing_detail(self):
-        self.borrowing1 = sample_borrowing(expected_return_date="2100-01-01", user=self.user)
+        self.borrowing1 = sample_borrowing(
+            expected_return_date="2100-01-01", user=self.user
+        )
         url = detail_url(borrowing_id=self.borrowing1.id)
         res = self.client.get(url)
 
@@ -81,7 +83,7 @@ class AuthenticatedBorrowingApiTest(TestCase):
         payload = {
             "expected_return_date": return_date,
             "book": book.id,
-            "user": self.user.id
+            "user": self.user.id,
         }
 
         res = self.client.post(BORROWINGS_URL, payload)
@@ -103,7 +105,11 @@ class AuthenticatedBorrowingApiTest(TestCase):
 
     def test_filter_active_borrowings(self):
         borrowing1 = sample_borrowing(expected_return_date="2100-01-01", user=self.user)
-        borrowing2 = sample_borrowing(expected_return_date="2100-01-02", actual_return_date="2099-01-02", user=self.user)
+        borrowing2 = sample_borrowing(
+            expected_return_date="2100-01-02",
+            actual_return_date="2099-01-02",
+            user=self.user,
+        )
         res = self.client.get(BORROWINGS_URL, {"is_active": True})
 
         serializer1 = BorrowingListSerializer(borrowing1)
@@ -138,8 +144,12 @@ class AdminBorrowingApiTests(TestCase):
             "usertestpass",
         )
         self.client.force_authenticate(self.user)
-        self.borrowing1 = sample_borrowing(expected_return_date="2100-01-01", user=self.user)
-        self.borrowing2 = sample_borrowing(expected_return_date="2100-01-02", user=self.sample_user)
+        self.borrowing1 = sample_borrowing(
+            expected_return_date="2100-01-01", user=self.user
+        )
+        self.borrowing2 = sample_borrowing(
+            expected_return_date="2100-01-02", user=self.sample_user
+        )
 
     def test_filter_users_borrowings(self):
         res = self.client.get(BORROWINGS_URL, {"user_id": self.sample_user.id})

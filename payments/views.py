@@ -40,7 +40,9 @@ class PaymentViewSet(
         """Action used to check if stripe session was paid
         and change payment status in database"""
         try:
-            session = stripe.checkout.Session.retrieve(request.query_params.get("session_id"))
+            session = stripe.checkout.Session.retrieve(
+                request.query_params.get("session_id")
+            )
         except InvalidRequestError:
             return Response("Invalid stripe session")
         payment = get_object_or_404(Payment, id=request.query_params.get("payment_id"))
@@ -54,7 +56,9 @@ class PaymentViewSet(
     @action(detail=False, methods=["get"])
     def cancel(self, request):
         """Endpoint displaying message if payment is cancelled"""
-        return Response("Payment can be paid a bit later (the session is available for 24h)")
+        return Response(
+            "Payment can be paid a bit later (the session is available for 24h)"
+        )
 
 
 def create_borrowing_payment(borrowing, request):
