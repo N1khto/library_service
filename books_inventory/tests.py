@@ -107,11 +107,11 @@ class AdminBookApiTests(TestCase):
         }
 
         res = self.client.post(BOOK_URL, payload)
-        movie = Book.objects.get(id=res.data["id"])
+        book = Book.objects.get(id=res.data["id"])
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         for key in payload:
-            self.assertEqual(payload[key], getattr(movie, key))
+            self.assertEqual(payload[key], getattr(book, key))
 
     def test_delete_book(self):
         book = sample_book()
