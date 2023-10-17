@@ -29,14 +29,14 @@ class PaymentViewSet(
     serializer_class = PaymentSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
+    def get_queryset(self) -> queryset:
         queryset = self.queryset
         if not self.request.user.is_staff:
             queryset = queryset.filter(borrowing__user__id=self.request.user.id)
         return queryset.distinct()
 
     @action(detail=False, methods=["get"])
-    def success(self, request):
+    def success(self, request) -> Response:
         """Action used to check if stripe session was paid
         and change payment status in database"""
         try:
@@ -54,14 +54,14 @@ class PaymentViewSet(
         return Response("Payment already proceeded")
 
     @action(detail=False, methods=["get"])
-    def cancel(self, request):
+    def cancel(self, request) -> Response:
         """Endpoint displaying message if payment is cancelled"""
         return Response(
             "Payment can be paid a bit later (the session is available for 24h)"
         )
 
 
-def create_borrowing_payment(borrowing, request):
+def create_borrowing_payment(borrowing, request) -> None:
     """function used to receive borrowing instance, calculate total price of
     borrowing and create related payment instance. Then create new stripe checkout session
     and attach session_id and session_url to payment instance"""

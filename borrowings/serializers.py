@@ -35,7 +35,7 @@ class BorrowingCreateSerializer(BorrowingSerializer):
             "user",
         )
 
-    def create(self, validated_data):
+    def create(self, validated_data) -> Borrowing:
         with transaction.atomic():
             book = validated_data.get("book")
             borrowing = Borrowing.objects.create(**validated_data)

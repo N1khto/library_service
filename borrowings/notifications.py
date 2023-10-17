@@ -12,7 +12,7 @@ URL = settings.BOT_URL
 my_chat_id = settings.CHAT_ID
 
 
-def borrow_notification(data, chat_id=my_chat_id):
+def borrow_notification(data, chat_id=my_chat_id) -> None:
     """Telegram notification triggered on every new borrowing creation"""
     book = get_object_or_404(Book, id=data.get("book"))
     user = get_object_or_404(get_user_model(), id=data.get("user"))
@@ -23,7 +23,7 @@ def borrow_notification(data, chat_id=my_chat_id):
     )
 
 
-def overdue_borrowings(chat_id=my_chat_id):
+def overdue_borrowings(chat_id=my_chat_id) -> None:
     """Telegram notification for displaying list of overdue borrowings in group chat"""
     overdue = Borrowing.objects.filter(
         actual_return_date__isnull=True,

@@ -13,7 +13,7 @@ from borrowings.serializers import BorrowingListSerializer, BorrowingDetailSeria
 BORROWINGS_URL = reverse("borrowings:borrowing-list")
 
 
-def sample_borrowing(**params):
+def sample_borrowing(**params) -> Borrowing:
     defaults = {
         "expected_return_date": "2100-01-01",
         "actual_return_date": None,
@@ -25,26 +25,26 @@ def sample_borrowing(**params):
     return Borrowing.objects.create(**defaults)
 
 
-def detail_url(borrowing_id):
+def detail_url(borrowing_id) -> str:
     return reverse("borrowings:borrowing-detail", args=[borrowing_id])
 
 
-def return_url(borrowing_id):
+def return_url(borrowing_id) -> str:
     """Return URL used to return borrowing"""
     return reverse("borrowings:borrowing-return-borrowing", args=[borrowing_id])
 
 
 class UnauthenticatedBorrowingApiTest(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = APIClient()
 
-    def test_auth_required(self):
+    def test_auth_required(self) -> None:
         res = self.client.get(BORROWINGS_URL)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class AuthenticatedBorrowingApiTest(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
             "test@user.com",
@@ -52,7 +52,7 @@ class AuthenticatedBorrowingApiTest(TestCase):
         )
         self.client.force_authenticate(self.user)
 
-    def test_list_borrowings(self):
+    def test_list_borrowings(self) -> None:
         sample_borrowing(expected_return_date="2100-01-01", user=self.user)
         sample_borrowing(expected_return_date="2100-01-02", user=self.user)
         sample_borrowing(expected_return_date="2100-01-03", user=self.user)
@@ -65,7 +65,7 @@ class AuthenticatedBorrowingApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
-    def test_retrieve_borrowing_detail(self):
+    def test_retrieve_borrowing_detail(self) -> None:
         self.borrowing1 = sample_borrowing(
             expected_return_date="2100-01-01", user=self.user
         )
@@ -77,7 +77,7 @@ class AuthenticatedBorrowingApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
-    def test_create_borrowing(self):
+    def test_create_borrowing(self) -> None:
         book = sample_book()
         return_date = date(2100, 1, 1)
         payload = {
@@ -94,7 +94,7 @@ class AuthenticatedBorrowingApiTest(TestCase):
         self.assertEqual(Borrowing.objects.get().book.id, book.id)
         self.assertEqual(Borrowing.objects.get().user.id, self.user.id)
 
-    def test_delete_borrowing_prohibited(self):
+    def test_delete_borrowing_prohibited(self) -> None:
         borrowing = sample_borrowing(user=self.user)
 
         url = detail_url(borrowing.id)
@@ -103,7 +103,7 @@ class AuthenticatedBorrowingApiTest(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_filter_active_borrowings(self):
+    def test_filter_active_borrowings(self) -> None:
         borrowing1 = sample_borrowing(expected_return_date="2100-01-01", user=self.user)
         borrowing2 = sample_borrowing(
             expected_return_date="2100-01-02",
@@ -118,7 +118,7 @@ class AuthenticatedBorrowingApiTest(TestCase):
         self.assertIn(serializer1.data, res.data)
         self.assertNotIn(serializer2.data, res.data)
 
-    def test_action_return_borrowing(self):
+    def test_action_return_borrowing(self) -> None:
         borrowing1 = sample_borrowing(expected_return_date="2100-01-01", user=self.user)
 
         url = return_url(borrowing1.id)
@@ -132,7 +132,7 @@ class AuthenticatedBorrowingApiTest(TestCase):
 
 
 class AdminBorrowingApiTests(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
             "admin@test.com",
@@ -151,7 +151,7 @@ class AdminBorrowingApiTests(TestCase):
             expected_return_date="2100-01-02", user=self.sample_user
         )
 
-    def test_filter_users_borrowings(self):
+    def test_filter_users_borrowings(self) -> None:
         res = self.client.get(BORROWINGS_URL, {"user_id": self.sample_user.id})
 
         serializer1 = BorrowingListSerializer(self.borrowing1)

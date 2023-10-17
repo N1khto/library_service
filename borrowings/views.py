@@ -1,7 +1,7 @@
 from datetime import date
+from typing import Type
 
 from django.db import transaction
-from django.shortcuts import redirect
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, status
@@ -33,7 +33,14 @@ class BorrowingViewSet(
     serializer_class = BorrowingSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_serializer_class(self):
+    def get_serializer_class(
+        self,
+    ) -> Type[
+        BorrowingListSerializer
+        | BorrowingDetailSerializer
+        | BorrowingCreateSerializer
+        | BorrowingSerializer
+    ]:
         if self.action == "list":
             return BorrowingListSerializer
         if self.action == "retrieve":
@@ -42,17 +49,17 @@ class BorrowingViewSet(
             return BorrowingCreateSerializer
         return BorrowingSerializer
 
-    def get_serializer_context(self):
+    def get_serializer_context(self) -> dict:
         context = super().get_serializer_context()
         context.update({"request": self.request})
         return context
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer) -> None:
         instance = serializer.save(user=self.request.user)
         borrow_notification(serializer.data)
         create_borrowing_payment(instance, serializer.context.get("request"))
 
-    def get_queryset(self):
+    def get_queryset(self) -> queryset:
         is_active = self.request.query_params.get("is_active")
         queryset = self.queryset
         if self.request.user.is_staff:
@@ -66,7 +73,7 @@ class BorrowingViewSet(
         return queryset.distinct()
 
     @action(detail=True, methods=["post"], url_path="return")
-    def return_borrowing(self, request, pk=None):
+    def return_borrowing(self, request, pk=None) -> Response:
         """Action used to return borrowed book.
         You cannot return book twice.
         Also you can return only book without 'actual_return_date'"""
@@ -102,5 +109,5 @@ class BorrowingViewSet(
             ),
         ]
     )
-    def list(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs) -> Response:
         return super().list(request, *args, **kwargs)

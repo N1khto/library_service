@@ -10,7 +10,7 @@ from books_inventory.serializers import BookSerializer
 BOOK_URL = reverse("books:book-list")
 
 
-def sample_book(**params):
+def sample_book(**params) -> Book:
     defaults = {
         "title": "Bible",
         "author": "Unknown",
@@ -23,20 +23,20 @@ def sample_book(**params):
     return Book.objects.create(**defaults)
 
 
-def detail_url(book_id):
+def detail_url(book_id) -> str:
     return reverse("books:book-detail", args=[book_id])
 
 
 class UnauthenticatedBookApiTest(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = APIClient()
         self.book1 = sample_book()
 
-    def test_list_auth_dont_required(self):
+    def test_list_auth_dont_required(self) -> None:
         res = self.client.get(BOOK_URL)
         self.assertEquals(res.status_code, status.HTTP_200_OK)
 
-    def test_retrieve_auth_required(self):
+    def test_retrieve_auth_required(self) -> None:
         url = detail_url(book_id=self.book1.id)
         res = self.client.get(url)
 
@@ -44,7 +44,7 @@ class UnauthenticatedBookApiTest(TestCase):
 
 
 class AuthenticatedBookApiTest(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
             "test@user.com",
@@ -55,7 +55,7 @@ class AuthenticatedBookApiTest(TestCase):
         self.book2 = sample_book(title="second")
         self.book3 = sample_book(title="third")
 
-    def test_list_books(self):
+    def test_list_books(self) -> None:
         res = self.client.get(BOOK_URL)
 
         books = Book.objects.all()
@@ -64,7 +64,7 @@ class AuthenticatedBookApiTest(TestCase):
         self.assertEquals(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
-    def test_retrieve_book_detail(self):
+    def test_retrieve_book_detail(self) -> None:
         url = detail_url(book_id=self.book1.id)
         res = self.client.get(url)
 
@@ -73,7 +73,7 @@ class AuthenticatedBookApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
-    def test_create_book_forbidden(self):
+    def test_create_book_forbidden(self) -> None:
         payload = {
             "title": "Bible",
             "author": "Unknown",
@@ -87,7 +87,7 @@ class AuthenticatedBookApiTest(TestCase):
 
 
 class AdminBookApiTests(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
             "admin@test.com",
@@ -97,7 +97,7 @@ class AdminBookApiTests(TestCase):
         self.client.force_authenticate(self.user)
         self.book1 = sample_book(title="first")
 
-    def test_create_book(self):
+    def test_create_book(self) -> None:
         payload = {
             "title": "Bible",
             "author": "Unknown",
@@ -113,7 +113,7 @@ class AdminBookApiTests(TestCase):
         for key in payload:
             self.assertEqual(payload[key], getattr(book, key))
 
-    def test_delete_book(self):
+    def test_delete_book(self) -> None:
         book = sample_book()
 
         url = detail_url(book.id)

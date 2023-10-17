@@ -13,10 +13,10 @@ class Borrowing(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Book:'{self.book.title}' borrowed by {self.user.email}"
 
-    def clean(self):
+    def clean(self) -> None:
         book = Book.objects.get(id=self.book.id)
         if book.inventory < 1:
             raise ValidationError(message="This book out of stock. Come back latter.")
@@ -27,7 +27,7 @@ class Borrowing(models.Model):
         force_update=False,
         using=None,
         update_fields=None,
-    ):
+    ) -> None:
         self.full_clean()
         super(Borrowing, self).save(force_insert, force_update, using, update_fields)
 
