@@ -78,7 +78,10 @@ class BorrowingViewSet(
                 book.inventory += 1
                 book.save()
                 borrowing.save()
-                return redirect(f"/api/borrowings/{pk}")
+                return Response(
+                    data={"message": f"You successfully returned the {book.title}"},
+                    status=status.HTTP_200_OK,
+                )
 
         return Response(
             data={"detail": "This book already returned"},

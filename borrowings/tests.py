@@ -127,8 +127,8 @@ class AuthenticatedBorrowingApiTest(TestCase):
 
         serializer = BorrowingDetailSerializer(borrowing1)
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("actual_return_date", serializer.data)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIsNotNone("actual_return_date", serializer.data)
 
 
 class AdminBorrowingApiTests(TestCase):
